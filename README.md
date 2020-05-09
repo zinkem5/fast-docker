@@ -1,6 +1,6 @@
 # FAST Docker
 
-A prototype configurable MVP of FAST Container (@f5devcentral/f5-fast-core)[https://www.npmjs.com/package/@f5devcentral/f5-fast-core]
+A prototype configurable MVP of FAST Container [@f5devcentral/f5-fast-core](https://www.npmjs.com/package/@f5devcentral/f5-fast-core)
 
 # Usage
 
