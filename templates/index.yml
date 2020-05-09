@@ -1,0 +1,11 @@
+title: HelloWorld
+description: An example template!
+parameters:
+  name: world
+definitions:
+  name:
+    title: Name
+    description: Who do you want to say hello to?
+    type: string
+template: |
+  Hello {{name}}!
