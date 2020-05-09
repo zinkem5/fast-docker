@@ -1,3 +1,16 @@
+/**
+
+  FAST HTTP
+  Author: Matthew Zinke <m.zinke@f5.com>
+
+  FAST HTTP will quickly stand up an HTTP service for rendering
+  volume mounted FAST Templates.
+
+  Each template in the volume will be mapped to a URL endpoint
+  using the title in the template. 
+
+*/
+
 const http = require('http');
 
 const fs = require('fs');
