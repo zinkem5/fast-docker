@@ -19,4 +19,12 @@ Get the template schema.
 
 ### `POST`
 
+Post Template Parameters, and get a rendered template in response.
+
 Body must conform to schema from GET.
+
+# Known Issues
+
+TODO: Error handling
+TODO: Tests
+TODO: API Forwarder Endpoint
