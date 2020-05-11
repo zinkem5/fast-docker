@@ -23,6 +23,10 @@ Post Template Parameters, and get a rendered template in response.
 
 Body must conform to schema from GET.
 
+```shell
+curl -X POST http://localhost:3000/HelloWorld -H "Content-Type: application/json" -d '{"name":"World"}'
+```
+
 # Known Issues
 
 TODO: Error handling
