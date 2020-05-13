@@ -1,0 +1,26 @@
+parameters:
+  feature: fast-docker
+  test_list:
+    - test: equality
+      pass_condition: 1 equals 1
+      actual: 1
+      expected: 1
+definitions:
+  actual:
+    type: integer
+  expected:
+    type: integer
+template: |
+  const assert = require('assert');
+
+  describe('{{feature}}', function() {
+
+    {{#test_list}}
+    describe('{{test}}', function() {
+      it('{{pass_condition}}', function() {
+        assert.equal({{actual}}, {{expected}});
+      });
+    });
+    {{/test_list}}
+
+  });
