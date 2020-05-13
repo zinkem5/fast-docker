@@ -4,7 +4,7 @@
   "description": "Containerized FAST Template Platform (Proto)",
   "main": "index.js",
   "scripts": {
-    "test": "fast render test/tests.yaml > test/tests.js && npx mocha **/*.js"
+    "test": "fast render test/module-tests.yaml > test/tests.js && npx mocha **/*.js"
   },
   "keywords": [
     "docker",
