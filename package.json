@@ -17,5 +17,8 @@
     "@f5devcentral/f5-fast-core": "^0.4.0",
     "js-yaml": "^3.13.1",
     "polka": "^0.5.2"
+  },
+  "devDependencies": {
+    "mocha": "^7.1.2"
   }
 }
