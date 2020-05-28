@@ -75,7 +75,7 @@ ls(basedir)
   .then((results) => {
     results.forEach((template) => {
       templates[template.title.toLowerCase()] = template;
-      //console.log(template.title, 'loaded');
+      console.log(template.title, 'loaded');
     });
     // template set loaded in cache at this point
 
