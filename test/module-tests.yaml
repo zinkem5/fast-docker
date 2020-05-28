@@ -1,0 +1,60 @@
+parameters:
+  module: ..
+  http_test_list:
+    - test: httpGetTemplate
+      pass_condition: schema retrieved
+      input: ''
+      expected: '{"type":"object","properties":{"name":{"type":"string","title":"Name","description":"Who do you want to say hello to?"}},"required":["name"]}'
+    - test: httpPostTemplate
+      pass_condition: template rendered
+      input: |
+        { "name": "World" }
+      expected: |
+        Hello World!
+  test_list:
+    - test: simpleTestPoc
+      pass_condition: integer doubled
+      input: '1'
+      expected: '2'
+template: |
+  const { PassThrough } = require('stream');
+  const assert = require('assert');
+
+  //module under test
+  const mut = require('{{module}}');
+  describe('{{module}} functions', function() {
+
+    {{#http_test_list}}
+    describe('{{test}} http handler tests', function() {
+      it('{{pass_condition}}', function(done) {
+
+        const req = new PassThrough();
+        req.params = { path: 'HelloWorld' };
+
+        const res = new PassThrough();
+        const buffer = [];
+        res.on('data', (data) => {
+          buffer.push(data.toString('utf8'));
+        });
+        res.on('end', () => {
+          const actual = buffer.join('');
+          done(assert.equal(actual, `{{expected}}`));
+        });
+
+        mut.{{test}}(req, res);
+        req.write(`{{input}}`)
+        req.end();
+      });
+    });
+    {{/http_test_list}}
+
+    {{#test_list}}
+    describe('{{test}} synchronous function tests', function() {
+      it('{{pass_condition}}', function() {
+        const actual = mut.{{test}}({{input}});
+        assert.equal(actual, {{expected}});
+      });
+    });
+    {{/test_list}}
+
+  });
