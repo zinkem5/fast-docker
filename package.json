@@ -14,13 +14,13 @@
   "author": "Matthew Zinke <m.zinke@f5.com>",
   "license": "MIT",
   "dependencies": {
-    "@f5devcentral/f5-fast-core": "^0.4.0",
-    "js-yaml": "^3.13.1",
+    "@f5devcentral/f5-fast-core": "^0.5.1",
+    "js-yaml": "^3.14.0",
     "polka": "^0.5.2"
   },
   "devDependencies": {
-    "eslint": "^7.0.0",
-    "mocha": "^7.1.2",
+    "eslint": "^7.1.0",
+    "mocha": "^7.2.0",
     "nyc": "^15.0.1"
   }
 }
