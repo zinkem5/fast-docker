@@ -33,6 +33,7 @@ const simpleTestPoc = (input) => input*2;
 const httpGetTemplate = (req, res) => {
   const press = templates[req.params.path.toLowerCase()];
   if(press) {
+    res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify(press._parametersSchema));
   } else {
     res.end('404: template not found');
