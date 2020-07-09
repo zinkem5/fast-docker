@@ -87,7 +87,7 @@ ls(basedir)
     // template set loaded in cache at this point
 
     //server start
-    server.listen(3000);
+    server.listen(80);
   });
 
 

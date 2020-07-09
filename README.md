@@ -6,7 +6,7 @@ A prototype configurable MVP of FAST Container [@f5devcentral/f5-fast-core](http
 
 ```
 docker build --tag fastdock .
-docker run -p 3000:3000 -v <YOUR TEMPLATE DIR>:/var/config/templates fastdock
+docker run -p 3000:80 -v <YOUR TEMPLATE DIR>:/var/config/templates fastdock
 ```
 
 Uses FAST F5 Application Templates
