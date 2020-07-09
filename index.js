@@ -30,6 +30,11 @@ console.log(`basedir ${basedir}`);
 
 const simpleTestPoc = (input) => input*2;
 
+const httpListTemplates = (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.end(JSON.stringify(Object.keys(templates)));
+};
+
 const httpGetTemplate = (req, res) => {
   const press = templates[req.params.path.toLowerCase()];
   if(press) {
@@ -61,6 +66,7 @@ const httpPostTemplate = (req, res) => {
 };
 
 const server = app();
+server.get('/', httpListTemplates);
 server.get('/:path', httpGetTemplate);
 server.post('/:path', httpPostTemplate);
 
