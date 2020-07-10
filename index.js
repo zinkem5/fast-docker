@@ -35,6 +35,19 @@ const httpListTemplates = (req, res) => {
   res.end(JSON.stringify(Object.keys(templates)));
 };
 
+const httpGetHtmlForm = (req, res) => {
+  const press = templates[req.params.path.toLowerCase()];
+  if(press) {
+    res.setHeader('Content-Type', 'text/html');
+    res.end(fast.guiUtils.generateHtmlPreview(
+      press.getParametersSchema(),
+      press.getCombinedParameters({})
+    ));
+  } else {
+    res.end('404: template not found');
+  }
+};
+
 const httpGetTemplate = (req, res) => {
   const press = templates[req.params.path.toLowerCase()];
   if(press) {
@@ -67,8 +80,10 @@ const httpPostTemplate = (req, res) => {
 
 const server = app();
 server.get('/', httpListTemplates);
+server.get('/html/:path', httpGetHtmlForm);
 server.get('/:path', httpGetTemplate);
 server.post('/:path', httpPostTemplate);
+
 
 //main promise chain listens on port 3000
 ls(basedir)
