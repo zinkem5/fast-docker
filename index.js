@@ -42,7 +42,27 @@ const httpGetHtmlForm = (req, res) => {
     res.end(fast.guiUtils.generateHtmlPreview(
       press.getParametersSchema(),
       press.getCombinedParameters({})
-    ));
+    ) + `
+    <script>
+
+    const submit_button = document.createElement('button');
+    submit_button.innerText = 'Submit';
+    submit_button.addEventListener('click',function() {
+      // Get the value from the editor
+      console.log(editor.getValue());
+      fetch('/${press.title}', {
+          method: 'POST',
+          body: JSON.stringify(editor.getValue())
+      })
+      .then(res => res.json())
+      .then(data => console.log(data))
+      .catch(e => console.log(e))
+
+    });
+    // Hook up the submit button to log to the console
+    document.body.appendChild(submit_button);
+    </script>
+    `);
   } else {
     res.end('404: template not found');
   }
