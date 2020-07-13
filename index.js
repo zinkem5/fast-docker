@@ -78,6 +78,94 @@ const httpGetTemplate = (req, res) => {
   }
 };
 
+
+const _http = require('http');
+const _https = require('https');
+const USER_AGENT_STRING = 'FAST Docker httpForward v0.0.0';
+const httpForward = (opts, payload) => {
+  const protocol = opts.protocol !== 'https:' ? _http : _https;
+  console.log('httpForward', opts);
+  if(!opts.headers)
+    opts.headers = {};
+
+  if(!opts.headers['User-Agent']) {
+    opts.headers['User-Agent'] = USER_AGENT_STRING;
+  }
+  console.log('makeRequest', opts);
+  return new Promise((resolve, reject) => {
+    const req = protocol.request(opts, (res) => {
+      console.log(res.statusCode);
+      console.log(res.headers);
+
+      res.on('error', (err) => {
+        console.error('response error;'+err);
+      });
+
+      if( res.statusCode >= 300 && res.statusCode < 400 ) {
+        if(res.headers && res.headers.location) {
+          const parsed = url.parse(res.headers.location);
+          return makeRequest(Object.assign(opts, parsed), payload);
+        } else {
+          return reject(new Error('Redirected, but No Location header'));
+        }
+      }
+
+      if( res.headers['content-type'] === 'application/octet-stream') {
+        // handle file download, works on github at least...
+        const cd = parseContentDisposition(res.headers['content-disposition']);
+
+        //const fstream = fs.createWriteStream(cd.filename, {autoclose: false});
+        //res.pipe(fstream);
+        let bytes_recieved = 0;
+        res.on('data', (data) => {
+          bytes_recieved += data.length
+        })
+        res.on('end', () => {
+          console.log(`${bytes_recieved} recieved`)
+          return resolve({
+            options: opts,
+            status: res.statusCode,
+            headers: res.headers,
+            file: cd.filename
+          });
+        });
+
+      } else {
+        // ... other content assumed to be utf8, for now ...
+        const buffer = [];
+        res.setEncoding('utf8');
+        res.on('data', (data) => {
+          buffer.push(data);
+        });
+        res.on('end', () => {
+          let body = buffer.join('');
+          console.log(body);
+          return resolve({
+            options: opts,
+            status: res.statusCode,
+            headers: res.headers,
+            body: body
+          });
+        });
+      }
+    });
+
+    req.on('error', (e) => {
+      console.log('error making http request');
+      console.log(e.message);
+      console.log(e.stack);
+      //reject(new Error(`${opts.host}:${e.message}`));
+    });
+
+    if (payload) req.write(payload);
+    req.end();
+  })
+  .catch((e) => {
+    throw new Error(`makeRequest: ${e.stack}`);
+  })
+};
+
+
 const httpPostTemplate = (req, res) => {
   const press = templates[req.params.path.toLowerCase()];
   if(press) {
@@ -88,7 +176,32 @@ const httpPostTemplate = (req, res) => {
     req.on('end', () => {
       const params = JSON.parse(buffer.join(''));
       //console.log(params);
-      res.end(press.render(params));
+      const rendered = press.render(params);
+
+      if( press.parsedSource.httpForward ) {
+        const httpForwardOpts = press.parsedSource.httpForward.options;
+
+        //forward auth header if none exists on the httpForward spec
+        if(!httpForwardOpts.headers.Authorization && req.headers.Authorization)
+          httpForwardOpts.headers.Authorization = req.headers.Authorization;
+
+        httpForward(httpForwardOpts, rendered)
+          .then((responseData) => {
+            res.statusCode = responseData.status;
+            Object.keys(responseData.headers)
+              .forEach((key) => {
+                res.setHeader(key, responseData.headers[key]);
+              });
+            if(res.statusCode === 401) {
+              res.statusCode = 401;
+              res.setHeader('WWW-Authenticate', 'Basic');
+            }
+
+            res.end(responseData.body);
+          });
+      } else {
+        res.end(press.render(params));
+      }
     });
     req.on('error', () => {
       res.end('500: template error');
@@ -112,12 +225,18 @@ ls(basedir)
   })
   .then((results) => {
     const files = results.map(x => x.toString('utf8'));
-    return Promise.all(files.map(yaml => fast.Template.loadYaml(yaml)));
+    return Promise.all(files.map(raw => {
+      return fast.Template.loadYaml(raw)
+      .then((becomingTemplate) => {
+        becomingTemplate.parsedSource = yaml.safeLoad(raw);
+        return becomingTemplate;
+      })
+    }))
   })
   .then((results) => {
-    results.forEach((template) => {
+    results.forEach((item) => {
+      const template = item;
       templates[template.title.toLowerCase()] = template;
-      console.log(template.title, 'loaded');
     });
     // template set loaded in cache at this point
 
