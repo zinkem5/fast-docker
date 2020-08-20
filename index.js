@@ -45,22 +45,61 @@ const httpGetHtmlForm = (req, res) => {
     ) + `
     <script>
 
+    let auth_string = null;
+
     const submit_button = document.createElement('button');
     submit_button.innerText = 'Submit';
     submit_button.addEventListener('click',function() {
       // Get the value from the editor
       console.log(editor.getValue());
-      fetch('/${press.title}', {
+
+      const fetchOpts = {
           method: 'POST',
           body: JSON.stringify(editor.getValue())
-      })
+      }
+
+      if(auth_string && auth_string.length > 0) {
+        fetchOpts.headers = new Headers({
+            Authorization: auth_string
+        });
+      };
+
+      fetch('/${press.parsedSource.id.toLowerCase()}', fetchOpts)
       .then(res => res.json())
-      .then(data => console.log(data))
+      .then(data => {
+        console.log(data)
+        const response_div = document.createElement('tt');
+        response_div.innerText = JSON.stringify(data,null,2);
+        document.body.appendChild(response_div);
+      })
       .catch(e => console.log(e))
 
     });
     // Hook up the submit button to log to the console
     document.body.appendChild(submit_button);
+
+    document.body.appendChild(document.createElement('br'));
+
+    // form field to add auth header
+    const token_entry = document.createElement('input');
+    token_entry.id = 'auth'
+
+
+    document.body.appendChild(token_entry);
+
+    const token_entry_button = document.createElement('button');
+
+    token_entry_button.innerText = 'Add Authorization String to Headers'
+    token_entry_button.addEventListener('click', () => {
+      console.log('eventlistener', token_entry);
+        const header = document.getElementById('auth');
+        auth_string = header.value;
+        console.log('clicked', auth_string, token_entry_button.value);
+    });
+
+    document.body.appendChild(token_entry_button);
+
+    console.log('all stuff should be done...');
     </script>
     `);
   } else {
@@ -184,12 +223,17 @@ const httpPostTemplate = (req, res) => {
         //forward auth header if none exists on the httpForward spec
         if(!httpForwardOpts.headers.Authorization && req.headers.Authorization)
           httpForwardOpts.headers.Authorization = req.headers.Authorization;
+        else if(!httpForwardOpts.headers.Authorization && req.headers.authorization)
+          httpForwardOpts.headers.Authorization = req.headers.authorization;
+
+        console.log('auth string', req.headers.Authorization, req.headers.authorization);
 
         httpForward(httpForwardOpts, rendered)
           .then((responseData) => {
             res.statusCode = responseData.status;
             Object.keys(responseData.headers)
               .forEach((key) => {
+                console.log(key, responseData.headers[key]);
                 res.setHeader(key, responseData.headers[key]);
               });
             if(res.statusCode === 401) {
@@ -236,7 +280,7 @@ ls(basedir)
   .then((results) => {
     results.forEach((item) => {
       const template = item;
-      templates[template.title.toLowerCase()] = template;
+      templates[template.parsedSource.id.toLowerCase()] = template;
     });
     // template set loaded in cache at this point
 
